@@ -36,7 +36,7 @@ class LogParser:
         # --- MODIFIED PART END ---
         r" accepted "
         r"(?P<proto>\w+):(?P<site>[^:]+):(?P<port>\d+)"
-        r" \[(?P<inbound>\w+) -> (?P<outbound>\w+)\]"
+        r"(?: \[(?P<inbound>\w+) -> (?P<outbound>\w+)\])?"
         r" email: (?P<email>.+)$"
     )
 
@@ -68,14 +68,17 @@ class LogParser:
             source_ip = data['ip_raw'].strip('[]')
             # --- MODIFIED PART END ---
 
+            inbound_tag = data.get('inbound') or 'default_in'
+            outbound_tag = data.get('outbound') or 'default_out'
+
             return LogEntry(
                 timestamp=datetime.strptime(data['datetime'], '%Y/%m/%d %H:%M:%S'),
                 source_ip=source_ip, # Use the cleaned IP
                 dest_protocol=data['proto'],
                 dest_site=data['site'],
                 dest_port=int(data['port']),
-                inbound_tag=data['inbound'],
-                outbound_tag=data['outbound'],
+                inbound_tag=inbound_tag,
+                outbound_tag=outbound_tag,
                 user_email=data['email']
             )
         except (ValueError, KeyError) as e:
@@ -164,11 +167,11 @@ class LogAnalyzer:
                 ips[entry.user_email].add(entry.source_ip)
         return ips
     
-    def count_by(self, fun:Callable[[LogEntry],str]) -> list[tuple[str, int]]:
+    def count_by(self, fun:Callable[[LogEntry],str], max_count:int=30) -> list[tuple[str, int]]:
         if not self.entries:
             return []
         hour_counter = Counter(fun(entry) for entry in self.entries)
-        return hour_counter.most_common()
+        return hour_counter.most_common(max_count)
 
     def print_report(self):
         """Prints a formatted summary report of the log analysis."""
