@@ -198,7 +198,7 @@ class LogAnalyzer:
             print(f"{tag:<20} {count} connections")
 
         self._stats_print("Top 10 destination site", self.count_by(lambda e:e.dest_site))
-        self._stats_print("Connections by hour", self.get_stats_by_hour())
+        self._stats_print("Connections by hour", sorted(self.get_stats_by_hour()))
         self._group_print("Group source IP by user", self.group_ip_by_user())
             
         print("\n--- End of Report ---")
