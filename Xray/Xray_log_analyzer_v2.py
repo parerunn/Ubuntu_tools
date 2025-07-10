@@ -277,7 +277,7 @@ class LogAnalyzer:
                 print(f"  {ip:<40} {count} connections")
 
             
-            self._stats_print("Connections by hour", sorted(self.count_by(accepted_entries, lambda e: str(e.timestamp.hour))))
+            self._stats_print("Connections by hour", sorted(self.count_by(accepted_entries, lambda e: str(e.timestamp.hour)),key=lambda x: int(x[0])))
             self._group_print("Group source IP by user", self.group_and_aggregate(
                 accepted_entries,
                 key_func=lambda e: e.user_email,
